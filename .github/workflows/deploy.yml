@@ -37,7 +37,7 @@ jobs:
 
           echo "✅ Found config.js in root."
 
-          # ביצוע ההחלפה
+          # ביצוע ההחלnפה
           sed -i "s|__GEMINI_KEY_PLACEHOLDER__|$THE_SECRET|g" "$FILE_PATH"
 
           # בדיקה אם הפלייסהולדר עדיין קיים
