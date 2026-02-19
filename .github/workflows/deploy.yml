@@ -1,0 +1,52 @@
+name: Deploy Website with AI Key
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch: # מאפשר להריץ ידנית בלחיצת כפתור
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Inject API Key
+        env:
+          MY_SECRET: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          # בדיקה אם המפתח קיים בהגדרות
+          if [ -z "$MY_SECRET" ]; then
+            echo "Error: GEMINI_API_KEY not found in GitHub Secrets!"
+            exit 1
+          fi
+
+          # החלפת הפלייסהולדר במפתח האמיתי בתוך config.js
+          sed -i "s|__GEMINI_KEY_PLACEHOLDER__|$MY_SECRET|g" config.js
+          
+          echo "✅ API Key injected successfully."
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
